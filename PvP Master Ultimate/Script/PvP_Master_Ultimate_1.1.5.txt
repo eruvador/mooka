@@ -441,7 +441,7 @@ function	script	pvpm_func	{
 			{
 				if (@id[@i] == getcharid(getarg(2)))
 				{
-				dispbottom "- "+strcharinfo(getarg(2))+" | "+@i+"º | Pontos: "+@points;
+				dispbottom "- "+strcharinfo(getarg(2))+" | "+@i+"º | Pontos: "+@points[@i];
 				return;
 				}
 			}

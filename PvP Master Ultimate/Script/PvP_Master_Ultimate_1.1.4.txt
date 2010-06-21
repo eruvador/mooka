@@ -407,7 +407,7 @@ callfunc "pvpm_func","Ranking1","kills",0,"PvP";
 			{
 				if (@id[@i] == getcharid(getarg(2)))
 				{
-				dispbottom "- "+strcharinfo(getarg(2))+" | "+@i+"º | Pontos: "+@points;
+				dispbottom "- "+strcharinfo(getarg(2))+" | "+(@i+1)+"º | Pontos: "+@points[@i];
 				return;
 				}
 			}
