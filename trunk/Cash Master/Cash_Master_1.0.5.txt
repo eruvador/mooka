@@ -31,6 +31,8 @@
 //|  `type` int(11) unsigned NOT NULL default '0',				     |
 //|  KEY `id` (`id`)								     |
 //| ) TYPE=MyISAM;								     |
+//|										     |
+//|alter table login add vipdia int(4) not null default '0';			     |
 //| ================================================================================ |
 //|[1.0.5]: Adicionado Duplicates.				[_Okuz_]	     |
 //| 1.0.4 : Cash Master agora suporta mais de 128 items.	[Mooka]		     |
@@ -51,7 +53,7 @@ set $@DefaultLogSys,0;  						  	  // |
 //|--> 1 = Usar o comando logmes do emulador.//|       			  	     |
 //|                        						  	     |
 //| ~> Nome dos tipos de VIP.							     |
-setarray $@TypeVIP$[0],"Não VIP","Gold","Premium";				     |
+setarray $@TypeVIP$[0],"Não VIP","Gold","Premium";				  // |
 //|==================================================================================|
 callfunc("updateshop");
 end;
@@ -173,7 +175,7 @@ admin:
 			next;
 			mes $@name_cm$;
 			mes "^4682B4Cash adicionado ao jogador com sucesso.";
-			message rid2name(@aid),"Foi adicionado à sua conta "+@amount+" CASH's";
+			if(isloggedin(@aid)) message rid2name(@aid),"Foi adicionado à sua conta "+@amount+" CASH's";
 			break;
 		case 2:
 			callsub(function,"","^4682B4Insira a quantia a ser retirada.","^4682B4Cash à Retirar");
@@ -288,7 +290,7 @@ admin:
 			next;
 			mes $@name_cm$;
 			mes "^4682B4VIP adicionado com sucesso.";
-			message rid2name(@aid),"Foi adicionado à sua conta "+@vipdia+" dias VIP "+$@TypeVIP$[@VIPType];
+			if(isloggedin(@aid)) message rid2name(@aid),"Foi adicionado à sua conta "+@vipdia+" dias VIP "+$@TypeVIP$[@VIPType];
 			break;
 		case 2:
 			mes $@name_cm$;
