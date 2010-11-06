@@ -55,7 +55,7 @@ function	script	AllyMsgChannel	{
 				 query_sql("select account_id from guild_member where guild_id="+.@GID+" or guild_id="+@AlID[getarg(0)]+" and online=1",@Umsg_L);
 		for(set @i,0;@i <= getarraysize(@Umsg_L);set @i,@i+1) setd ".Umsg_L"+.@GID+"["+@i+"]",@Umsg_L[@i];
 		setd ".time_umsg"+.@GID,gettime(2);
-		}	if((gettime(1)-@uDelay)<=.@ChatDelay)
+		}	if((gettime(1)-@uDelay)<=$@ChatDelay)
 			{
 			dispbottom "[WARNING] Wait for the delay of "+$@ChatDelay+" seconds per message.";
 			set @uDelay,gettime(1);
