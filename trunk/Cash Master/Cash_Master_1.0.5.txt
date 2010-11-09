@@ -415,7 +415,6 @@ OnBuyItem:
 	{
 	dispbottom "Você não pode realizar esta compra.";
 	dispbottom "Caso queria fazer uma doação visite nosso site.";
-	dispbottom "www.wodro.com/index.php?pagina=donation";
 	end;
 	}
 	set @r,rand(4,6);
