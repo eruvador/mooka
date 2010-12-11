@@ -778,8 +778,8 @@ function	script	pvpm_func	{
 			getexp @EXP,@EXP;
 			dispbottom callfunc("getMesPM",77)+" "+@EXP+" EXP.";
 			} else	{
-				set BaseExp,BaseExp-$@lostEXP;
-				set JobExp,JobExp-$@lostEXP;
+				if(BaseExp) set BaseExp,BaseExp-$@lostEXP;
+				if(JobExp) set JobExp,JobExp-$@lostEXP;
 				dispbottom callfunc("getMesPM",78)+" "+$@lostEXP+" EXP.";;
 				} return;
 		}
