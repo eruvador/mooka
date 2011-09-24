@@ -14,7 +14,7 @@ CREATE TABLE `pvpm_data` (
 KEY `id` (`id`),
 KEY `kills` (`kills`),
 KEY `dies` (`dies`)
-) TYPE=MyISAM;
+) ENGINE=MyISAM;
 
 -- v1.1.1+
 alter table pvpm_data add ratio int(11) not null default '0' after dies;
@@ -26,7 +26,7 @@ CREATE TABLE `pvpm_map` (
 `map` varchar(255) NOT NULL default 'NULL',
 `type` int(11) unsigned NOT NULL default '0',
 KEY `id` (`id`)
-) type=MyISAM;
+) ENGINE=MyISAM;
 insert into pvpm_map (id,map,type) values (0,'guild_vs3',0);
 insert into pvpm_map (id,map,type) values (1,'pvp_n_1-5',0);
 insert into pvpm_map (id,map,type) values (2,'guild_vs1',2);
