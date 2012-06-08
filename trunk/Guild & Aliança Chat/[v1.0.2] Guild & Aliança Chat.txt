@@ -28,7 +28,7 @@ OnWhisperGlobal:
 		query_sql("select account_id from guild_member where guild_id="+.@GID+" and online=1",@Gmsg_L);
 		setd ".time_gmsg"+getcharid(2),gettime(2);
 		} copyarray .@Gmsg_L,@Gmsg_L,getarraysize(@Gmsg_L);
-			for(set .@j,0;.@j<=getarraysize(.@Gmsg_L);set .@j,.@j+1)
+			for(set .@j,0;.@j <= getarraysize(.@Gmsg_L);set .@j,.@j+1)
 			{
 			if(!attachrid(.@Gmsg_L[.@j])) continue;
 			announce "[Guild Master] "+.@whispervar$,bc_self,0xf5deb3;

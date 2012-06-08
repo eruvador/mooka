@@ -11,7 +11,7 @@
 //|      \:\__\        \::/  /       \::/  /       \:\__\        \:\__\      	     |
 //|       \/__/         \/__/         \/__/         \/__/         \/__/      	     |
 //| ================================================================================ |
-//| Script Desenvolvido Por Mooka | Por Favor, Não Retire Os Créditos.		     |
+//| Script Desenvolvido Por Mooka | eAthena | Por Favor, Não Retire Os Créditos.     |
 //| ================================================================================ |
 //| Table Update (1.0.0+):							     |
 //| DROP TABLE IF EXISTS `cm_db`;						     |
@@ -31,6 +31,8 @@
 //|  `type` int(11) unsigned NOT NULL default '0',				     |
 //|  KEY `id` (`id`)								     |
 //| ) TYPE=MyISAM;								     |
+//|										     |
+//|alter table login add vipdia int(4) not null default '0';			     |
 //| ================================================================================ |
 //|[1.0.5]: Adicionado Duplicates.				[_Okuz_]	     |
 //| 1.0.4 : Cash Master agora suporta mais de 128 items.	[Mooka]		     |
@@ -39,14 +41,41 @@
 //| 1.0.1 : Corrigido bug com uso do WPE.			[Mooka]		     |
 //| 1.0.0 : Desenvolvido.					[Mooka]		     |
 //| ================================================================================ |
-prontera,164,166,5	script	Cash Center	822,{				  // |
-//|										     |
-//| -------------------ATENÇÃO CONFIGURAÇÕES NO FINAL DO SCRIPT--------------------- |
-//| -------------------ATENÇÃO CONFIGURAÇÕES NO FINAL DO SCRIPT--------------------- |
-//|										     |
-if (2000000 == getcharid(3)) goto admin; // Configurar para sua conta.		     |
-//|										     |
+-	script	cm_init	-1,{							  // |
+OnInit:		          						  	  // |
+//|                        						  	     |
+set $@name_cm$,"[ ^BC8F8FCash Service^000000 ]"; // Nome do npc.		     |
+//|                        						  	     |
+//| ~> Sistema de LOG do Cash Master.					  	     |
+set $@DefaultLogSys,0;  						  	  // |
+//|--> 0 = Usar o sistema próprio do script;				  	     |
+//|---> Nota: Necessita ser ativado em log_eathena.conf. (log_npc: 0)		     |  
+//|--> 1 = Usar o comando logmes do emulador.//|       			  	     |
+//|                        						  	     |
+//| ~> Nome dos tipos de VIP.							     |
+setarray $@TypeVIP$[0],"Não VIP","Gold","Premium";				  // |
 //|==================================================================================|
+callfunc("updateshop");
+end;
+
+OnClock0000:
+	query_sql "delete from cm_db where cash=0 and mail=0";
+	query_sql "update login set vipdia=vipdia-1 where vipdia > 0 and level<10";
+	query_sql "update login set level=0 where vipdia=0 and level>0 and level<10";
+	end;
+
+
+OnPCLoginEvent:
+	query_sql("select cash from cm_db where account_id="+getcharid(3),@cashrops);
+	query_sql("select vipdia from login where account_id="+getcharid(3),@vip);
+	if(@cashrops) dispbottom "[Você possui "+@cashrops+" CASH's.]";
+	if(@vip) dispbottom "[Você possui "+@vip+" dia(s) VIP restante(s).]";
+	end;
+}
+
+-	script	cm_source	832,{
+
+		if(2000000 == getcharid(3)) goto admin; // Configurar para sua conta.
 
 begin:
 	deletearray @count[0],getarraysize(@count);
@@ -70,13 +99,13 @@ case 1:
 		if(!getgmlevel())
 		{
 		mes "^4682B4Olá, você não é VIP.";
+		mes "^4682B4Ele pode ser comprado com Cash neste npc, mas infelizmente você não possui Cash suficiente.";
 		mes "Caso esteja interessado visite nosso site.";
 		close;
 		}
-
 	mes "^4682B4Deseja ir a Sala VIP?";
 	if(select("^708090- Sim:- Não")==2) close;
-	warp $@CM_VIPMAP$,$@CM_XY,$@CM_XY[1];
+	warp "sec_in02",28,167;
 	close;
 case 2:
 	next;
@@ -247,7 +276,7 @@ admin:
 				} next;
 			mes $@name_cm$;
 			mes "Qual o tipo de VIP?";
-			if(select("^708090- Gold:- Prêmio")==1) set @VIPType,1; else set @VIPType,2;
+			if(select("^708090- Gold:- Premium")==1) set @VIPType,1; else set @VIPType,2;
 			next;
 			mes $@name_cm$;
 			mes "^4682B4Account ID: ^EEAD2D"+@aid;
@@ -258,7 +287,6 @@ admin:
 			for(set @i,0;@i<getarraysize(@name$);set @i,@i+1) mes "^6A5ACD- "+@name$[@i];
 			if(select("^708090- Prosseguir:- Cancelar") == 2) break;
 			query_sql "update login set level="+@VIPType+",vipdia=vipdia+"+@amount+" where account_id="+@aid;
-			atcommand "@reloadgmdb";
 			next;
 			mes $@name_cm$;
 			mes "^4682B4VIP adicionado com sucesso.";
@@ -344,7 +372,7 @@ admin:
 			mes "^4682B4Deseja atualizar o Shop?";
  			if(select("^708090- Não:- Sim") == 1) break;
 			set .@a,1;
-			callsub(updateshop);				
+			callfunc("updateshop");				
 			mes $@name_cm$;
 			mes "^4682B4Shop atualizado com sucesso.";
 			} break;
@@ -397,24 +425,12 @@ function:
 				mes "^4682B4Chars Encontrados: ";
 				for(set @i,0;@i<getarraysize(@name$);set @i,@i+1) mes "^6A5ACD- "+@name$[@i];
 				return;
-
-updateshop: // NÃO MEXER
-	set $@InitShop,1;
-	npcshopattach "cm_shop";
-	npcshopdelitem "cm_shop",512;
-	query_sql "select nameid,price from cm_itemdb where id<129 order by nameid asc",$@cm_itemdb,$@cm_pricedb;
-	for(set .@i,0;.@i!=getarraysize($@cm_itemdb);set .@i,.@i+1) npcshopadditem "cm_shop",$@cm_itemdb[.@i],$@cm_pricedb[.@i];
-		if(getarraysize($@cm_itemdb)>=128)
-		{
-		query_sql "select nameid,price from cm_itemdb where id>127 order by nameid asc",$@cm_itemdb2,$@cm_pricedb2;
-		for(set .@i,0;.@i!=getarraysize($@cm_itemdb2);set .@i,.@i+1) npcshopadditem "cm_shop",$@cm_itemdb2[.@i],$@cm_pricedb2[.@i];
-		} return;
-
 OnBuyItem:
 	if(@cash<10)
 	{
 	dispbottom "Você não pode realizar esta compra.";
 	dispbottom "Caso queria fazer uma doação visite nosso site.";
+	dispbottom "www.wodro.com/index.php?pagina=donation";
 	end;
 	}
 	set @r,rand(4,6);
@@ -437,7 +453,7 @@ OnBuyItem:
 			}
 	set @price,0;
 	set @pricetotal,0;
-		for(set @i,0;@i<getarraysize(@bought_nameid[0]);set @i,@i+1)
+		for(set @i,0;@i<getarraysize(@bought_nameid[0]);set @i,@i+1)	
 		{
 		query_sql "select price from cm_itemdb where nameid="+@bought_nameid[@i]+" limit 1",@price;
 		set @pricetotal,@pricetotal+(@price*@bought_quantity[@i]);
@@ -460,43 +476,24 @@ OnBuyItem:
 	query_sql "update cm_db set cash=cash-"+@pricetotal+" where account_id="+getcharid(3);
 	dispbottom "Você gastou: "+@pricetotal+" Cash.";
 	close;
-
-OnPCLoginEvent:
-query_sql("select cash from cm_db where account_id="+getcharid(3),@cashrops);
-query_sql("select vipdia from login where account_id="+getcharid(3),@vip);
-if(@cashrops) dispbottom "[Você possui "+@cashrops+" CASH's.]";
-if(@vip) dispbottom "[Você possui "+@vip+" dia(s) VIP restante(s).]";
-end;
-
-
-OnClock0000:
-//	query_sql "update inventory set deltime=deltime-1 where deltime>0";
-//	query_sql "delete from inventory where deltime=0";
-//	query_sql "update storage set deltime=deltime-1 where deltime>0";
-//	query_sql "delete from storage where deltime=0";
-	query_sql "delete from cm_db where cash=0 and mail=0";
-	query_sql "update login set vipdia=vipdia-1 where vipdia > 0 and level<10";
-	query_sql "update login set level=0 where vipdia=0 and level>0 and level<10";
-	atcommand "@reloadgmdb";
-	end;
-
-OnInit:
-	// ------- CONFS -------
-
-	set $@name_cm$,"[ ^BC8F8FCash Service^000000 ]"; // Nome do npc.
-	set $@DefaultLogSys,0; // Sistema de LOG do Cash Master. [0 = Usar o sistema próprio do script; 1 = Usar o comando logmes do emulador. (Necessita ser ativado em log_eathena.conf)]
-	setarray $@TypeVIP$[0],"Não VIP","Gold","Prêmio";
-
-	// ----- Mapa e coordenadas VIP -----
-	set $@CM_VIPMAP$,"prontera";
-	setarray $@CM_XY,0,0;
-
-// ===== Não mecha daqui pra baixo. =====
-callsub(updateshop);
-
 }
--	shop	cm_shop	-1,512:100
 
+
+function	script	updateshop	{
+	set $@InitShop,1;
+	npcshopattach "cm_shop";
+	npcshopdelitem "cm_shop",512;
+	query_sql "select nameid,price from cm_itemdb where id<129 order by nameid asc",$@cm_itemdb,$@cm_pricedb;
+	for(set .@i,0;.@i!=getarraysize($@cm_itemdb);set .@i,.@i+1) npcshopadditem "cm_shop",$@cm_itemdb[.@i],$@cm_pricedb[.@i];
+		if(getarraysize($@cm_itemdb)>=128)
+		{
+		query_sql "select nameid,price from cm_itemdb where id>127 order by nameid asc",$@cm_itemdb2,$@cm_pricedb2;
+		for(set .@i,0;.@i!=getarraysize($@cm_itemdb2);set .@i,.@i+1) npcshopadditem "cm_shop",$@cm_itemdb2[.@i],$@cm_pricedb2[.@i];
+		} return;
+}
+
+
+-	shop	cm_shop	-1,512:100
 
 //Duplicates
 prontera,102,77,5	duplicate(cm_source)	[ROPs] Assistente#1	832

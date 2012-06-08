@@ -437,7 +437,7 @@ OnBuyItem:
 			}
 	set @price,0;
 	set @pricetotal,0;
-		for(set @i,0;@i<getarraysize(@bought_nameid[0]);set @i,@i+1)
+		for(set @i,0;@i<getarraysize(@bought_nameid[0]);set @i,@i+1)	
 		{
 		query_sql "select price from cm_itemdb where nameid="+@bought_nameid[@i]+" limit 1",@price;
 		set @pricetotal,@pricetotal+(@price*@bought_quantity[@i]);
